@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="wrapper" style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 100%; height: auto; background-repeat: no-repeat;background-origin: content-box; background-size: cover; background-image: url({{url_for('static', filename='ipl_bg.jpg')}}); ">
+        <br><br>
+        <h1 style="color: rgb(216, 218, 181); font-size: xx-large;">First Innings Score Predictor for <span style="font-style: italic; font-size: x-large;"> Indian Premier League(IPL)</span></h1>
+
+        {% if result %}
+
+            <p style="color: rgb(248, 222, 218); font-size: 1.2rem;">{{ team }} to score {{ result }} runs at the end of 1st Innings. <span style="color: tomato; font-size: 0.5rem;">(based on ml model)</span></p>
+
+        {% endif %}
+
+        <br>
+
+        <form action="/predict" method="post">
+            <select id="bat_team_DD"
+                style="outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202); margin: 0.8rem;"
+                name="batting_team" required></select>
+
+            <select id="bowl_team_DD"
+                style="outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202);margin: 0.8rem; margin-right: 0rem;"
+                name="bowling_team" required></select>
+
+            <br><br>
+
+            <select id="venueDropDown"
+                style="width: 98%; outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202);margin: 0.8rem;"
+                name="venue" required></select>
+
+            <br><br>
+
+            <div style="display: flex; flex-direction: row; justify-content: space-between;">
+
+                <input type="text" name="overs"
+                    style="width: 6rem; outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202);margin: 0.8rem;"
+                    placeholder="overs" required>
+
+                <input type="text" name="runs"
+                    style="width: 6rem; outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202);margin: 0.8rem;"
+                    placeholder="runs" required>
+
+                <input type="text" name="wickets"
+                    style="width: 6rem; outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202);margin: 0.8rem; margin-right: 0rem;"
+                    placeholder="wickets" required>
+
+            </div>
+
+            <br>
+
+            <input type="text" name="runs_last_5"
+                style="width: 95%; outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202);margin: 0.8rem;"
+                placeholder="Runs in prev 5 Overs" required>
+
+            <br>
+
+            <input type="text" name="wickets_last_5"
+                style="width: 95%; outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202);margin: 0.8rem;"
+                placeholder="Wickets in prev 5 Overs" required>
+
+            <br><br>
+
+            <!-- <input class="submit-btn" type="submit" value="Predict"
+                style="outline:none;padding: 0.4rem;border-radius: 5px; border: none;background: #e4bfbf; box-shadow: 0 0 20px rgb(221, 231, 87);margin:0% 45%; cursor: pointer;"
+                required> -->
+            <input class="btn btn-outline-light" type="submit" value="Predict" style="margin:0% 45%;"required>
+
+            <br><br>
+        </form>
+    </div>
+    <script>
+        var venue_array = ['- - Venue - -', 'M Chinnaswamy Stadium',
+            'Punjab Cricket Association Stadium, Mohali', 'Feroz Shah Kotla',
+            'Wankhede Stadium', 'Eden Gardens', 'Sawai Mansingh Stadium',
+            'Rajiv Gandhi International Stadium, Uppal',
+            'MA Chidambaram Stadium, Chepauk', 'Dr DY Patil Sports Academy',
+            'Newlands', "St George's Park", 'Kingsmead', 'SuperSport Park',
+            'Buffalo Park', 'New Wanderers Stadium', 'De Beers Diamond Oval',
+            'OUTsurance Oval', 'Brabourne Stadium',
+            'Sardar Patel Stadium, Motera', 'Barabati Stadium',
+            'Vidarbha Cricket Association Stadium, Jamtha',
+            'Himachal Pradesh Cricket Association Stadium',
+            'Dr. Y.S. Rajasekhara Reddy ACA-VDCA Cricket Stadium',
+            'Subrata Roy Sahara Stadium',
+            'Shaheed Veer Narayan Singh International Stadium',
+            'JSCA International Stadium Complex', 'Sheikh Zayed Stadium',
+            'Sharjah Cricket Stadium', 'Dubai International Cricket Stadium',
+            'Maharashtra Cricket Association Stadium',
+            'Punjab Cricket Association IS Bindra Stadium, Mohali',
+            'Holkar Cricket Stadium'];
+        var venue_options = "";
+        venue_array.map((op, i) => {
+            if(op === '- - Venue - -')
+            {
+                venue_options += `<option value="" id="${i}" style="border-radius: 5px;"">${op}</option>`
+            }
+            else{
+                venue_options += `<option value="${op}" id="${i}" style="border-radius: 5px;"">${op}</option>`
+            }
+            
+        })
+        document.getElementById("venueDropDown").innerHTML = venue_options;
+
+
+
+        var bat_team_array = ['- - Batting Team - -', 'Kolkata Knight Riders', 'Chennai Super Kings', 'Rajasthan Royals',
+            'Mumbai Indians', 'Sunrisers Hyderabad', 'Punjab Kings',
+            'Royal Challengers Bangalore', 'Delhi Capitals'];
+        var bat_options = "";
+        bat_team_array.map((op, i) => {
+            if(op === '- - Batting Team - -')
+            {
+                bat_options += `<option value="" id="${i}" style="border-radius: 5px;"">${op}</option>`
+            }
+            else
+            {
+                bat_options += `<option value="${op}" id="${i}" style="border-radius: 5px;"">${op}</option>`
+            }
+            
+        })
+        document.getElementById("bat_team_DD").innerHTML = bat_options;
+
+
+
+        var bowl_team_array = ['- - Bowling Team - -', 'Royal Challengers Bangalore', 'Punjab Kings', 'Delhi Capitals',
+            'Kolkata Knight Riders', 'Rajasthan Royals', 'Mumbai Indians',
+            'Chennai Super Kings', 'Sunrisers Hyderabad'];
+        var bowl_options = "";
+        bowl_team_array.map((op, i) => {
+            if(op === '- - Bowling Team - -')
+            {
+                bowl_options += `<option value="" id="${i}" style="border-radius: 5px;"">${op}</option>`
+            }
+            else{
+                bowl_options += `<option value="${op}" id="${i}" style="border-radius: 5px;"">${op}</option>`
+            }
+            
+        })
+        document.getElementById("bowl_team_DD").innerHTML = bowl_options;
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+{% endblock body %}

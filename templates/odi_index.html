@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="wrapper" style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 100%; height: auto; background-repeat: no-repeat;background-origin: content-box; background-size: cover; background-image: url({{url_for('static', filename='odi_bg.jpg')}}); ">
+        <br><br>
+        <h1 style="color: rgb(216, 218, 181); font-size: xx-large;">First Innings Score Predictor for <span style="font-style: italic; font-size: x-large;"> One Day Internationals(ODI)</span></h1>
+
+        {% if result %}
+
+            <p style="color: rgb(248, 222, 218); font-size: 1.2rem;">{{ team }} to score {{ result }} runs at the end of 1st Innings. <span style="color: tomato; font-size: 0.5rem;">(based on ml model)</span></p>
+
+        {% endif %}
+
+        <br>
+
+        <form action="/odi-predict" method="post" style="width: 41%;">
+
+            <div style="display: flex; flex-direction: row; justify-content: space-between; padding: 0rem;">
+            <select id="bat_team_DD"
+                style="outline:none; width: 46%; padding: 0.4rem; border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202); margin: 0.8rem;" name="batting_team" required></select>
+
+            <select id="bowl_team_DD"
+                style="outline:none; width: 46%; padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202); margin: 0.8rem; margin-right: 0rem;"
+                name="bowling_team" required></select>
+            </div>
+
+
+            <br>
+
+            <select id="venueDropDown"
+                style="width: 98%; outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202);margin: 0.8rem;"
+                name="venue" required></select>
+
+            <br><br>
+
+            <div style="display: flex; flex-direction: row; justify-content: space-between;">
+
+                <input type="text" name="overs"
+                    style="width: 6rem; outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202);margin: 0.8rem;"
+                    placeholder="overs" required>
+
+                <input type="text" name="runs"
+                    style="width: 6rem; outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202);margin: 0.8rem;"
+                    placeholder="runs" required>
+
+                <input type="text" name="wickets"
+                    style="width: 6rem; outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202);margin: 0.8rem; margin-right: 0rem;"
+                    placeholder="wickets" required>
+
+            </div>
+
+            <br>
+
+            <input type="text" name="runs_last_5"
+                style="width: 95%; outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202);margin: 0.8rem;"
+                placeholder="Runs in prev 5 Overs" required>
+
+            <br>
+
+            <input type="text" name="wickets_last_5"
+                style="width: 95%; outline:none;padding: 0.4rem;border-radius: 5px; border: none; box-shadow: 0 0 10px rgb(202, 202, 202);margin: 0.8rem;"
+                placeholder="Wickets in prev 5 Overs" required>
+
+            <br><br>
+
+            <input class="btn btn-outline-light" type="submit" value="Predict" style="margin:0% 45%;"required>
+
+            <br><br>
+        </form>
+    </div>
+    <script>
+        var venue_array = ['- - Venue - -', 'The Rose Bowl', 'Trent Bridge', 'Edgbaston', "Lord's",
+       'Kennington Oval', 'Riverside Ground', 'Old Trafford',
+       'Headingley', 'Brisbane Cricket Ground, Woolloongabba',
+       'Docklands Stadium', 'Sydney Cricket Ground', 'Adelaide Oval',
+       'Western Australia Cricket Association Ground', 'Bellerive Oval',
+       'Jade Stadium', 'Westpac Stadium', 'Rawalpindi Cricket Stadium',
+       'Gaddafi Stadium', 'Multan Cricket Stadium', 'National Stadium',
+       'Shaheed Chandu Stadium', 'Chittagong Divisional Stadium',
+       'Narayanganj Osmani Stadium', 'Queenstown Events Centre',
+       'McLean Park', 'Eden Park', 'Feroz Shah Kotla',
+       'Nahar Singh Stadium', 'Nehru Stadium, Fatorda', 'Keenan Stadium',
+       'Maharani Usharaje Trust Cricket Ground', 'Newlands',
+       "St George's Park", 'Kingsmead', 'New Wanderers Stadium',
+       'R Premadasa Stadium', 'Sinhalese Sports Club Ground',
+       'Sabina Park, Kingston', 'Warner Park, Basseterre',
+       "Queen's Park Oval, Port of Spain", 'Sheikh Zayed Stadium',
+       'Beausejour Stadium, Gros Islet',
+       'Sir Vivian Richards Stadium, North Sound', 'Providence Stadium',
+       "National Cricket Stadium, St George's",
+       'Kensington Oval, Bridgetown', 'SuperSport Park',
+       'Melbourne Cricket Ground',
+       'Punjab Cricket Association Stadium, Mohali',
+       'Sawai Mansingh Stadium', 'Brabourne Stadium',
+       'Sardar Patel Stadium, Motera', 'Seddon Park',
+       'Kinrara Academy Oval', 'Iqbal Stadium', 'County Ground',
+       'MA Chidambaram Stadium, Chepauk',
+       'Indian Petrochemicals Corporation Limited Sports Complex Ground',
+       'Madhavrao Scindia Cricket Ground',
+       'Andhra Cricket Association-Visakhapatnam District Cricket Association Stadium',
+       'Shere Bangla National Stadium',
+       'Rangiri Dambulla International Stadium',
+       'Civil Service Cricket Club, Stormont', 'P Saravanamuttu Stadium',
+       'Nehru Stadium', 'Rajiv Gandhi International Stadium, Uppal',
+       'Sector 16 Stadium', 'Reliance Stadium',
+       'Vidarbha Cricket Association Ground', 'Wankhede Stadium',
+       'Green Park', 'Captain Roop Singh Stadium',
+       'Arnos Vale Ground, Kingstown', 'Marrara Cricket Ground',
+       'Senwes Park', 'Barabati Stadium', 'AMI Stadium',
+       'Dubai Sports City Cricket Stadium', 'Windsor Park, Roseau',
+       'Vidarbha Cricket Association Stadium, Jamtha', 'University Oval',
+       'Sophia Gardens', 'Zohur Ahmed Chowdhury Stadium', 'Eden Gardens',
+       'M Chinnaswamy Stadium', 'Pallekele International Cricket Stadium',
+       'Zahur Ahmed Chowdhury Stadium', 'Queens Sports Club',
+       'Harare Sports Club', 'Dubai International Cricket Stadium',
+       'Dr. Y.S. Rajasekhara Reddy ACA-VDCA Cricket Stadium',
+       'Boland Park', 'Buffalo Park', 'De Beers Diamond Oval',
+       'Mahinda Rajapaksa International Cricket Stadium, Sooriyawewa',
+       'Sharjah Cricket Stadium', 'Holkar Cricket Stadium',
+       'Saurashtra Cricket Association Stadium',
+       'JSCA International Stadium Complex',
+       'Himachal Pradesh Cricket Association Stadium', 'Chevrolet Park',
+       'Willowmoore Park', 'Sharjah Cricket Association Stadium',
+       'Manuka Oval', 'Sheikh Abu Naser Stadium',
+       'Maharashtra Cricket Association Stadium', 'Hagley Oval',
+       'Khan Shaheb Osman Ali Stadium', 'Bay Oval', 'Saxton Oval',
+       'Basin Reserve', 'Clontarf Cricket Club Ground',
+       'Darren Sammy National Cricket Stadium, Gros Islet'];
+        var venue_options = "";
+        venue_array.map((op, i) => {
+            if(op === '- - Venue - -')
+            {
+                venue_options += `<option value="" id="${i}" style="border-radius: 5px;"">${op}</option>`
+            }
+            else{
+                venue_options += `<option value="${op}" id="${i}" style="border-radius: 5px;"">${op}</option>`
+            }
+            
+        })
+        document.getElementById("venueDropDown").innerHTML = venue_options;
+
+
+
+        var bat_team_array = ['- - Batting Team - -','England', 'Pakistan', 'Sri Lanka', 'Australia' ,'South Africa', 'New Zealand',
+ 'Bangladesh', 'West Indies', 'India', 'Afghanistan'];
+        var bat_options = "";
+        bat_team_array.map((op, i) => {
+            if(op === '- - Batting Team - -')
+            {
+                bat_options += `<option value="" id="${i}" style="border-radius: 5px;"">${op}</option>`
+            }
+            else{
+                bat_options += `<option value="${op}" id="${i}" style="border-radius: 5px;"">${op}</option>`
+            }
+            
+        })
+        document.getElementById("bat_team_DD").innerHTML = bat_options;
+
+
+
+        var bowl_team_array = ['- - Bowling Team - -','Pakistan', 'England', 'Sri Lanka', 'South Africa', 'Australia', 'New Zealand',
+ 'India', 'West Indies', 'Bangladesh', 'Afghanistan'];
+        var bowl_options = "";
+        bowl_team_array.map((op, i) => {
+            if(op === '- - Bowling Team - -')
+            {
+                bowl_options += `<option value="" id="${i}" style="border-radius: 5px;"">${op}</option>`
+            }
+            else{
+                bowl_options += `<option value="${op}" id="${i}" style="border-radius: 5px;"">${op}</option>`
+            }
+            
+        })
+        document.getElementById("bowl_team_DD").innerHTML = bowl_options;
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+{% endblock body %}
